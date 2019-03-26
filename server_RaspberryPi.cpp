@@ -139,5 +139,6 @@ void sensorDataGather(SensorData &data, bool &ready, std::mutex &mtx, RTIMU *imu
       data.pitch = imuData.fusionPose.y() * RTMATH_RAD_TO_DEGREE;
       data.yaw = imuData.fusionPose.z() * RTMATH_RAD_TO_DEGREE;
       mtx.unlock();
+      usleep(100000);
   }
 }
