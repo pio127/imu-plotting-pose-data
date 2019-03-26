@@ -18,3 +18,8 @@ cmake ..
 cmake --build .
 ./server
 ```
+
+And for plotting computer:
+```
+./clientPlot IP_ADDRESS_OF_RASPBERRY_PI_SERVER
+```
