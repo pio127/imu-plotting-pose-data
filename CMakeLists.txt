@@ -11,7 +11,7 @@ find_package(PythonLibs 2.7 REQUIRED)
 find_package(Threads REQUIRED)
 
 
-include_directories(include ${PYTHON_INCLUDE_DIRS} header_only_libs)
+include_directories(include ${PYTHON_INCLUDE_DIRS} header_only_libs RTIMULib)
 
 add_executable(server server_RaspberryPi.cpp)
 add_executable(clientPlot client_plotting.cpp)

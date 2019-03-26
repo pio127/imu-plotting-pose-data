@@ -129,15 +129,18 @@ void dataTransmission(SensorData &data, bool &ready, std::mutex &mtx) {
 
 void sensorDataGather(SensorData &data, bool &ready, std::mutex &mtx, RTIMU *imu) {
   while(!ready) {}
-    while(ready) {
-      usleep(static_cast<__useconds_t>(imu->IMUGetPollInterval() * 1000));
-      imu->IMURead();
-      RTIMU_DATA imuData = imu->getIMUData();
 
-      mtx.lock();
-      data.roll = imuData.fusionPose.x() * RTMATH_RAD_TO_DEGREE;
-      data.pitch = imuData.fusionPose.y() * RTMATH_RAD_TO_DEGREE;
-      data.yaw = imuData.fusionPose.z() * RTMATH_RAD_TO_DEGREE;
-      mtx.unlock();
+
+  while (ready)
+  {
+    usleep(static_cast<__useconds_t>(imu->IMUGetPollInterval() * 1000));
+    imu->IMURead();
+    RTIMU_DATA imuData = imu->getIMUData();
+
+    mtx.lock();
+    data.roll = imuData.fusionPose.x() * RTMATH_RAD_TO_DEGREE;
+    data.pitch = imuData.fusionPose.y() * RTMATH_RAD_TO_DEGREE;
+    data.yaw = imuData.fusionPose.z() * RTMATH_RAD_TO_DEGREE;
+    mtx.unlock();
   }
 }

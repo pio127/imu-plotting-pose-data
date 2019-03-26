@@ -9,8 +9,18 @@
 using json = nlohmann::json;
 namespace plt = matplotlibcpp;
 
+struct SensorData
+{
+  double pitch;
+  double yaw;
+  double roll;
+  SensorData()
+      : pitch(0), yaw(0), roll(0){};
+};
+
 int main(int argc, char *argv[]) {
 
+  SensorData data{};
   sockaddr_in server;
   char serverReply[100] = {0};
   timeval tv;
@@ -20,13 +30,14 @@ int main(int argc, char *argv[]) {
   int count{1};
   double waitTime(0.05);
 
-  //std::vector<double> time{};
-  std::vector<double> values1{};
-  std::vector<double> values2{};
-  values1.reserve(10000);
-  values2.reserve(10000);
+  std::vector<double> rollValues{};
+  std::vector<double> pitchValues{};
+  std::vector<double> yawValues{};
+  rollValues.reserve(10000);
+  pitchValues.reserve(10000);
+  yawValues.reserve(10000);
 
-char *address;
+  char *address;
   if (argc >1 ) {
     address = const_cast<char*>(argv[1]);
     std::cout << "IP address of server: " << address << '\n';
@@ -49,9 +60,9 @@ char *address;
     return 1;
   }
 
-
-  plt::plot(values1);
-  plt::plot(values2);
+  plt::plot(pitchValues);
+  plt::plot(rollValues);
+  plt::plot(yawValues);
   plt::pause(waitTime);
 
   // Connecting with server
@@ -81,14 +92,18 @@ char *address;
       auto jValues{json::parse(serverReply)};
 
       // Getting data from JSON and adding to vector
-      double x1 = jValues[0]["value1"].get<double>();
-      double x2 = jValues[0]["value2"].get<double>();
-      values1.emplace_back(x1);
-      values2.emplace_back(x2);
+      data.roll = jValues[0]["roll"].get<double>();
+      data.pitch = jValues[0]["pitch"].get<double>();
+      data.yaw = jValues[0]["yaw"].get<double>();
+
+      rollValues.emplace_back(data.roll);
+      pitchValues.emplace_back(data.pitch);
+      yawValues.emplace_back(data.yaw);
 
       plt::clf();
-      plt::plot(values1);
-      plt::plot(values2);
+      plt::plot(rollValues);
+      plt::plot(pitchValues);
+      plt::plot(yawValues);
       plt::pause(waitTime);
       count++;
 
