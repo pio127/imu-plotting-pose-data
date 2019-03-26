@@ -13,8 +13,8 @@ find_package(Threads REQUIRED)
 
 include_directories(include ${PYTHON_INCLUDE_DIRS} header_only_libs)
 
-add_executable(server server.cpp)
-add_executable(clientPlot clientPlot.cpp)
+add_executable(server server_RaspberryPi.cpp)
+add_executable(clientPlot client_plotting.cpp)
 
 target_link_libraries(server ${PYTHON_LIBRARIES} RTIMULib ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(clientPlot ${PYTHON_LIBRARIES} )

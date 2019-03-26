@@ -30,19 +30,20 @@ int main() {
   bool ready{false};
   SensorData data{};
 
-	// IMU initialization
+  // IMU initialization
   RTIMUSettings *	settings = new RTIMUSettings("calib", "RTIMULib");
-	RTIMU *imu = RTIMU::createIMU(settings);
-	if ((imu == nullptr) || (imu->IMUType() == RTIMU_TYPE_NULL)) {
-			std::cerr << "IMU not found!\n";
-			return 0;
-	}
+  RTIMU *imu = RTIMU::createIMU(settings);
+  if ((imu == nullptr) || (imu->IMUType() == RTIMU_TYPE_NULL)) {
+		  std::cerr << "IMU not found!\n";
+		  return 0;
+  }
+
+  imu->IMUInit();
+  imu->setSlerpPower(0.02);
+  imu->setAccelEnable(true);
+  imu->setGyroEnable(true);
   std::cout<<std::endl;
-	imu->IMUInit();
-	imu->setSlerpPower(0.02);
-	imu->setAccelEnable(true);
-	imu->setGyroEnable(true);
-	//imu->setCompassEnable(true);
+  //imu->setCompassEnable(true);
 
   std::thread t1(sensorDataGather, std::ref(data), std::ref(ready),
                  std::ref(mtx), imu);  
@@ -84,7 +85,7 @@ void dataTransmission(SensorData &data, bool &ready, std::mutex &mtx) {
   }
   // Listening
   listen(socketServer, 3);
-  std::cout << "Searching for connection...\n";
+  std::cout << "Waiting for connection...\n";
 
   
   clientLen = sizeof(sockaddr_in);
@@ -115,6 +116,7 @@ void dataTransmission(SensorData &data, bool &ready, std::mutex &mtx) {
 
     if (sendStatus < 0) {
       std::cerr << "Failed to send\n";
+      ready = false;
       close(socketConnection);
       break;
     }
@@ -122,21 +124,20 @@ void dataTransmission(SensorData &data, bool &ready, std::mutex &mtx) {
     usleep(250000);
     count++;
   }
-  close(socketConnection);
 
 }
 
 void sensorDataGather(SensorData &data, bool &ready, std::mutex &mtx, RTIMU *imu) {
-	while(!ready) {}
-	while(ready) {
-		usleep(static_cast<__useconds_t>(imu->IMUGetPollInterval() * 1000));
-		imu->IMURead();
-		RTIMU_DATA imuData = imu->getIMUData();
+  while(!ready) {}
+    while(ready) {
+      usleep(static_cast<__useconds_t>(imu->IMUGetPollInterval() * 1000));
+      imu->IMURead();
+      RTIMU_DATA imuData = imu->getIMUData();
 
-		mtx.lock();
-		data.roll = imuData.fusionPose.x() * RTMATH_RAD_TO_DEGREE;
-    data.pitch = imuData.fusionPose.y() * RTMATH_RAD_TO_DEGREE;
-    data.yaw = imuData.fusionPose.z() * RTMATH_RAD_TO_DEGREE;
-		mtx.unlock();
-	}
+      mtx.lock();
+      data.roll = imuData.fusionPose.x() * RTMATH_RAD_TO_DEGREE;
+      data.pitch = imuData.fusionPose.y() * RTMATH_RAD_TO_DEGREE;
+      data.yaw = imuData.fusionPose.z() * RTMATH_RAD_TO_DEGREE;
+      mtx.unlock();
+  }
 }
